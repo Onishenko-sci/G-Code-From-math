@@ -18,7 +18,7 @@ public:
     void abs_move(Vector2D where);
     void rel_move(Vector2D where);
     void print(Vector2D where);
-    void print_3d(double x,double y,double,z);
+    void print_3d(double x,double y,double z);
     void print_bringe(Vector2D where);
     void next_layer();
     void change_extruder();
