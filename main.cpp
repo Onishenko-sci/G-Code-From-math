@@ -1,9 +1,9 @@
 #include <iostream>
-#include "./heads/print_head.hpp"
+#include "./heads/GCode.hpp"
 
 int main()
 {
-    print_head A("demo.gcode", Vector2D(160,160));
+    gcode A("demo.gcode");
 
     for (int j = 0; j < 10; j++)
     {

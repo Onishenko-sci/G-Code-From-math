@@ -5,14 +5,14 @@
 #include<fstream>
 #include<string>
 
-class print_head
+class gcode
 {
 private:
     Vector2D pos;
     double f_pos; // filament position
     double speed;
     bool two_extruders;
-    unsigned int exntruder;
+    unsigned int extruder;
 
     int nozzle_temp;
     unsigned int layer;
@@ -21,7 +21,14 @@ private:
 
 
 public:
-    print_head(std::string file_name, Vector2D start_pos = Vector2D(120,120) , int nozzle_temp = 215 , bool two_extr = false);
+    gcode(std::string file_name);
+
+    void set_extruder(unsigned int extr_number);
+    void set_temperature(unsigned int temperature, unsigned int extr , bool and_wait = false );
+    void clean_extruder(unsigned int extr_number);
+    void retract(int how_much);
+
+    void fan(int fan_speed);
 
     void abs_move(Vector2D where);
     void abs_move(Vector2D where,int speed);
@@ -35,7 +42,7 @@ public:
     void next_layer();
     void change_extruder();
     
-    ~print_head();
+    ~gcode();
 };
 
 #endif
