@@ -49,6 +49,8 @@ public:
     void abs_move(Vector2D where, int spd = 3600);
     void abs_move(double x, double y, int spd = 3600);
     void abs_move(double x, double y, double z, int spd = 3600);
+    
+    void rel_move(Vector2D where, int spd = 3600);
     void rel_move(double x, double y, int spd = 3600);
 
 
@@ -64,6 +66,7 @@ public:
     void schwartz( double mashtab = 1, int spd = 0);
 
     void square(double a, int spd = 0);
+    void schwartz_cube(int a, double mashtab = 1, int spd = 0);
 
     ~gcode();
 };

@@ -149,6 +149,11 @@ void gcode::rel_move(double x, double y, int spd)
     wher = pos + wher;
     abs_move(wher, spd);
 }
+void gcode::rel_move(Vector2D where, int spd)
+{
+    where = pos + where;
+    abs_move(where, spd);
+}
 
 void gcode::abs_move(double x, double y, double z_pos, int spd)
 {
@@ -193,7 +198,7 @@ void gcode::schwartz(double mashtab, int spd)
     double ctz = -1 / tan(mashtab * z);
 
     if (ctz > 0)
-        rel_move(0, Pi / (mashtab));
+        start.y = start.y - Pi / (mashtab);
 
     for (int i = 1; i <= steps; i++)
     {
@@ -201,8 +206,52 @@ void gcode::schwartz(double mashtab, int spd)
         abs_line(start.x + dx * i, start.y + y, spd);
     }
 
-    if (ctz > 0)
-        rel_move(0, Pi / (mashtab));
+    //    if (ctz > 0)
+    //        rel_move(0, Pi / (mashtab));
+}
+
+void gcode::schwartz_cube(int a, double mashtab, int spd)
+{
+    double ctz = -1 / tan(mashtab * z);
+    Vector2D start = pos;
+    Vector2D down(0, -Pi / mashtab);
+    Vector2D right(Pi / mashtab, 0);
+    if (ctz <= 0)
+    {
+        for (int j = 1; j <= a; j++)
+        {   
+            rel_move(down, spd*2);
+            abs_move(start + j * down,spd*2);
+            for (int n = 0; n < j; n++)
+                schwartz(mashtab, spd);
+        }
+        rel_move(a*down, spd*2 );
+        abs_move(start + a * down, spd*2);
+        start = pos;
+        for (int j = 1; j <= (a - 1); j++)
+        {
+            abs_move(start + j * right, spd*2);
+            for (int n = 0; n < a - j; n++)
+                schwartz(mashtab, spd);
+        }
+    }
+    else
+    {
+        for (int j = 1; j <= a; j++)
+        {
+            abs_move(start - j * down + a * down);
+            for (int n = 0; n < j; n++)
+                schwartz(mashtab, spd);
+        }
+        abs_move(start + a * down);
+        start = pos;
+        for (int j = 1; j <= (a - 1); j++)
+        {
+            abs_move(start + j * right - a * down);
+            for (int n = 0; n < a - j; n++)
+                schwartz(mashtab, spd);
+        }
+    }
 }
 
 void gcode::comment(std::string comentar)
