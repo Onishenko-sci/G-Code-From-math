@@ -27,6 +27,7 @@ private:
     int nozzle_temp;
     unsigned int layer;
     double layer_hight;
+    double line_wdh;
 
     double minimum_line_length = 0.54;
 
@@ -63,9 +64,9 @@ public:
     void abs_line(double x, double y, int spd = 0);
     void arc(double radius,double angle, double arc_angle = 90.0,  int spd = 0);
 
-    void schwartz( double mashtab = 1, int spd = 0);
+    void schwartz( double mashtab = 1, int repeat = 1, int spd = 0);
 
-    void square(double a, int spd = 0);
+    void square(double a, bool fill = false, int spd = 0);
     void schwartz_cube(int a, double mashtab = 1, int spd = 0);
 
     ~gcode();

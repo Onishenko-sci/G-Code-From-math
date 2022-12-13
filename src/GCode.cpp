@@ -8,6 +8,7 @@ gcode::gcode(std::string file_name)
 {
     std::string gcode_str = ".gcode";
     out.open(file_name + gcode_str);
+    line_wdh = 0.5;
     out << std::fixed << std::showpoint;
 }
 
@@ -167,12 +168,26 @@ void gcode::abs_move(double x, double y, double z_pos, int spd)
     out << std::setprecision(3) << " X" << pos.x << " Y" << pos.y << " Z" << z << endl;
 }
 
-void gcode::square(double a, int spd)
+void gcode::square(double a, bool fill, int spd)
 {
     line(a, 0, spd);
     line(0, a, spd);
     line(-a, 0, spd);
     line(0, -a, spd);
+    if (fill)
+    {
+        int steps = a / (2 * line_wdh);
+        extrusion(-0.5);
+        rel_move(line_wdh, line_wdh);
+        extrusion(0.5);
+        for (int i = 0; i < steps - 1; i++)
+        {
+            line(a - 2 * line_wdh, 0, spd);
+            line(0, line_wdh);
+            line(-(a - 2 * line_wdh), 0);
+            line(0, line_wdh);
+        }
+    }
 }
 
 void gcode::arc(double radius, double angle, double arc_angle, int spd)
@@ -188,24 +203,32 @@ void gcode::arc(double radius, double angle, double arc_angle, int spd)
         abs_line(circle_center.x + radius * cos(angle + angle_step * i), circle_center.y + radius * sin(angle + angle_step * i), spd);
 }
 
-void gcode::schwartz(double mashtab, int spd)
+void gcode::schwartz(double mashtab, int repeat, int spd)
 {
-    double min_sell_len = sqrt(2.0) * Pi / mashtab;
-    int steps = min_sell_len / minimum_line_length;
-    double dx = (Pi / mashtab) / steps;
+    double min_sell_len = sqrt(2.0) * Pi * mashtab;
+    int steps = abs(min_sell_len / minimum_line_length);
+    double dx = (Pi * mashtab) / steps;
 
     Vector2D start = pos;
-    double ctz = -1 / tan(mashtab * z);
+    double ctz = -1 / tan(z / mashtab);
 
-    if (ctz > 0)
-        start.y = start.y - Pi / (mashtab);
-
-    for (int i = 1; i <= steps; i++)
+    double prev_y;
+    for (int rep = 0; rep < repeat; rep++)
     {
-        double y = (atan(ctz / tan(mashtab * dx * i)) + Pi / 2) / mashtab;
-        abs_line(start.x + dx * i, start.y + y, spd);
-    }
+        if (ctz > 0)
+            prev_y = 0;
+        else
+            prev_y = -1*mashtab * Pi ;
 
+        out << "; " << prev_y << endl;
+        for (int i = 1; i <= steps; i++)
+        {
+            double y = (atan(ctz / tan(i * dx / mashtab)) - Pi / 2) ;
+            double dy = (y-prev_y)*mashtab;
+            prev_y = y;
+            line(dx, dy, spd);
+        }
+    }
     //    if (ctz > 0)
     //        rel_move(0, Pi / (mashtab));
 }
@@ -219,20 +242,20 @@ void gcode::schwartz_cube(int a, double mashtab, int spd)
     if (ctz <= 0)
     {
         for (int j = 1; j <= a; j++)
-        {   
-            rel_move(down, spd*2);
-            abs_move(start + j * down,spd*2);
+        {
+            rel_move(down, spd * 2);
+            abs_move(start + j * down, spd * 2);
             for (int n = 0; n < j; n++)
-                schwartz(mashtab, spd);
+                schwartz(mashtab, 1, spd);
         }
-        rel_move(a*down, spd*2 );
-        abs_move(start + a * down, spd*2);
+        rel_move(a * down, spd * 2);
+        abs_move(start + a * down, spd * 2);
         start = pos;
         for (int j = 1; j <= (a - 1); j++)
         {
-            abs_move(start + j * right, spd*2);
+            abs_move(start + j * right, spd * 2);
             for (int n = 0; n < a - j; n++)
-                schwartz(mashtab, spd);
+                schwartz(mashtab, 1, spd);
         }
     }
     else
@@ -241,7 +264,7 @@ void gcode::schwartz_cube(int a, double mashtab, int spd)
         {
             abs_move(start - j * down + a * down);
             for (int n = 0; n < j; n++)
-                schwartz(mashtab, spd);
+                schwartz(mashtab, 1, spd);
         }
         abs_move(start + a * down);
         start = pos;
@@ -249,7 +272,7 @@ void gcode::schwartz_cube(int a, double mashtab, int spd)
         {
             abs_move(start + j * right - a * down);
             for (int n = 0; n < a - j; n++)
-                schwartz(mashtab, spd);
+                schwartz(mashtab, 1, spd);
         }
     }
 }
