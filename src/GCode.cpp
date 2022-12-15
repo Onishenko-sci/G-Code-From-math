@@ -203,11 +203,14 @@ void gcode::arc(double radius, double angle, double arc_angle, int spd)
         abs_line(circle_center.x + radius * cos(angle + angle_step * i), circle_center.y + radius * sin(angle + angle_step * i), spd);
 }
 
-void gcode::schwartz(double mashtab, int repeat, int spd)
+void gcode::schwartz(double mashtab, int repeat, bool backwarnds, int spd)
 {
     double min_sell_len = sqrt(2.0) * Pi * mashtab;
     int steps = abs(min_sell_len / minimum_line_length);
     double dx = (Pi * mashtab) / steps;
+    int b = 1;
+    if (backwarnds)
+        b = -1;
 
     Vector2D start = pos;
     double ctz = -1 / tan(z / mashtab);
@@ -216,17 +219,17 @@ void gcode::schwartz(double mashtab, int repeat, int spd)
     for (int rep = 0; rep < repeat; rep++)
     {
         if (ctz > 0)
-            prev_y = 0;
+            prev_y = Pi;
         else
-            prev_y = -1*mashtab * Pi ;
+            prev_y = 0;
 
         out << "; " << prev_y << endl;
         for (int i = 1; i <= steps; i++)
         {
-            double y = (atan(ctz / tan(i * dx / mashtab)) - Pi / 2) ;
-            double dy = (y-prev_y)*mashtab;
+            double y = (atan(ctz / tan(i * dx / mashtab)) + Pi / 2);
+            double dy = (y - prev_y) * mashtab;
             prev_y = y;
-            line(dx, dy, spd);
+            line(b * dx, b * dy, spd);
         }
     }
     //    if (ctz > 0)
@@ -235,44 +238,72 @@ void gcode::schwartz(double mashtab, int repeat, int spd)
 
 void gcode::schwartz_cube(int a, double mashtab, int spd)
 {
-    double ctz = -1 / tan(mashtab * z);
+    double ctz = -1 / tan(z/mashtab);
     Vector2D start = pos;
-    Vector2D down(0, -Pi / mashtab);
-    Vector2D right(Pi / mashtab, 0);
+    Vector2D down(0, -Pi * mashtab);
+    Vector2D up(0, Pi * mashtab);
+    Vector2D right(Pi * mashtab, 0);
+
     if (ctz <= 0)
     {
+        //rel_move(a * up);
         for (int j = 1; j <= a; j++)
         {
-            rel_move(down, spd * 2);
-            abs_move(start + j * down, spd * 2);
-            for (int n = 0; n < j; n++)
-                schwartz(mashtab, 1, spd);
+            if (j % 2 == 1)
+            {
+                rel_move(down, spd * 2);
+                schwartz(mashtab, j, false, spd);
+            }
+            else
+            {
+                rel_move(right, spd * 2);
+                schwartz(mashtab, j, true, spd);
+            }
         }
-        rel_move(a * down, spd * 2);
-        abs_move(start + a * down, spd * 2);
-        start = pos;
-        for (int j = 1; j <= (a - 1); j++)
+
+        for (int j = a-1; j > 0; j--)
         {
-            abs_move(start + j * right, spd * 2);
-            for (int n = 0; n < a - j; n++)
-                schwartz(mashtab, 1, spd);
+            if (j % 2 == 0)
+            {
+                rel_move(down, spd * 2);
+                schwartz(mashtab, j, true, spd);
+            }
+            else
+            {
+                rel_move(right, spd * 2);
+                schwartz(mashtab, j, false, spd);
+            }
         }
     }
     else
     {
+        rel_move((a-1)*down);
         for (int j = 1; j <= a; j++)
         {
-            abs_move(start - j * down + a * down);
-            for (int n = 0; n < j; n++)
-                schwartz(mashtab, 1, spd);
+            if (j % 2 == 1)
+            {
+                rel_move(down, spd * 2);
+                schwartz(mashtab, j, false, spd);
+            }
+            else
+            {
+                rel_move(right, spd * 2);
+                schwartz(mashtab, j, true, spd);
+            }
         }
-        abs_move(start + a * down);
-        start = pos;
-        for (int j = 1; j <= (a - 1); j++)
+
+        for (int j = a-1; j > 0; j--)
         {
-            abs_move(start + j * right - a * down);
-            for (int n = 0; n < a - j; n++)
-                schwartz(mashtab, 1, spd);
+            if (j % 2 == 0)
+            {
+                rel_move(down, spd * 2);
+                schwartz(mashtab, j, true, spd);
+            }
+            else
+            {
+                rel_move(right, spd * 2);
+                schwartz(mashtab, j, false, spd);
+            }
         }
     }
 }

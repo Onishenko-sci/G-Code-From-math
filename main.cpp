@@ -23,26 +23,19 @@ int main()
     demo.abs_move(168, 110, 0.3);
     demo.extrusion(1);
 
-    Vector2D start = demo.position();
-    for (int i = 0; i < 100; i++)
-    {
-        demo.schwartz(1,5);
-        demo.rel_move(0,-Pi);
-        demo.schwartz(-1,4);
-        demo.next_layer(0.2);
-        demo.abs_move(start);
-    }
-/*
     demo.square(45, 1, 1800);
     demo.next_layer(0.2);
 
     demo.extrusion(-0.5);
     demo.abs_move(170, 150);
+    Vector2D start = demo.position();
     demo.extrusion(0.5);
-
 
     for (int i = 0; i < 128; i++)
     {
+      //  demo.abs_move(100, 100);
+      //  demo.schwartz(3,1,false);
+      //  demo.abs_move(start);
         if (i == 0)
         {
             demo.fan(255);
@@ -50,14 +43,14 @@ int main()
         }
 
         if (i < 3)
-            demo.schwartz_cube(3, 2, 900);
+            demo.schwartz_cube(4, 2, 900);
         else
-            demo.schwartz_cube(3, 2, 1800);
+            demo.schwartz_cube(4, 2, 1800);
 
         demo.next_layer(0.2);
         demo.abs_move(start);
     }
-*/
+
     demo.fan(0);
     demo.set_temperature(20, 0);
     return 0;

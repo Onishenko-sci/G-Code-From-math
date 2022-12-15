@@ -12,7 +12,7 @@ enum
 };
 
 const double Pi = 3.1415926535;
-const double radian = Pi/180;
+const double radian = Pi / 180;
 
 class gcode
 {
@@ -35,7 +35,7 @@ private:
 
 public:
     gcode(std::string file_name);
-    Vector2D position() {return pos;};
+    Vector2D position() { return pos; };
 
     void set_extruder(unsigned int extr_number);
     void set_temperature(unsigned int temperature, unsigned int extr, bool and_wait = false);
@@ -50,10 +50,9 @@ public:
     void abs_move(Vector2D where, int spd = 3600);
     void abs_move(double x, double y, int spd = 3600);
     void abs_move(double x, double y, double z, int spd = 3600);
-    
+
     void rel_move(Vector2D where, int spd = 3600);
     void rel_move(double x, double y, int spd = 3600);
-
 
     void next_layer(double next_layer_hight);
     //    void print_3d(double x,double y,double z);
@@ -62,9 +61,9 @@ public:
     void line(Vector2D where, int spd = 0);
     void line(double x, double y, int spd = 0);
     void abs_line(double x, double y, int spd = 0);
-    void arc(double radius,double angle, double arc_angle = 90.0,  int spd = 0);
+    void arc(double radius, double angle, double arc_angle = 90.0, int spd = 0);
 
-    void schwartz( double mashtab = 1, int repeat = 1, int spd = 0);
+    void schwartz(double mashtab = 1, int repeat = 1, bool backwarnds = 1, int spd = 0);
 
     void square(double a, bool fill = false, int spd = 0);
     void schwartz_cube(int a, double mashtab = 1, int spd = 0);
