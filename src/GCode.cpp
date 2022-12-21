@@ -125,6 +125,7 @@ void gcode::next_layer(double next_layer_hight)
     layer++;
     z = z + next_layer_hight;
     speed = 600;
+    out << ";layer:" << layer << endl;
     out << std::setprecision(3) << "G0 F" << 600 << " X" << pos.x << " Y" << pos.y << " Z" << z << std::endl;
 }
 
@@ -238,7 +239,7 @@ void gcode::schwartz(double mashtab, int repeat, bool backwarnds, int spd)
 
 void gcode::schwartz_cube(int a, double mashtab, int spd)
 {
-    double ctz = -1 / tan(z/mashtab);
+    double ctz = -1 / tan(z / mashtab);
     Vector2D start = pos;
     Vector2D down(0, -Pi * mashtab);
     Vector2D up(0, Pi * mashtab);
@@ -246,65 +247,85 @@ void gcode::schwartz_cube(int a, double mashtab, int spd)
 
     if (ctz <= 0)
     {
-        //rel_move(a * up);
+
         for (int j = 1; j <= a; j++)
         {
             if (j % 2 == 1)
             {
                 rel_move(down, spd * 2);
+                extrusion(1);
                 schwartz(mashtab, j, false, spd);
+                extrusion(-1);
             }
             else
             {
                 rel_move(right, spd * 2);
+                extrusion(1);
                 schwartz(mashtab, j, true, spd);
+                extrusion(-1);
             }
         }
 
-        for (int j = a-1; j > 0; j--)
+        for (int j = a - 1; j > 0; j--)
         {
             if (j % 2 == 0)
             {
                 rel_move(down, spd * 2);
+                extrusion(1);
                 schwartz(mashtab, j, true, spd);
+                extrusion(-1);
             }
             else
             {
                 rel_move(right, spd * 2);
+                extrusion(1);
                 schwartz(mashtab, j, false, spd);
+                extrusion(-1);
             }
         }
+        rel_move((a - 1) * up);
     }
     else
     {
-        rel_move((a-1)*down);
+        rel_move((a - 1) * down);
         for (int j = 1; j <= a; j++)
         {
             if (j % 2 == 1)
             {
-                rel_move(down, spd * 2);
+                extrusion(1);
+                if (j != 1)
+                    rel_move(up, spd * 2);
+
                 schwartz(mashtab, j, false, spd);
+                extrusion(-1);
             }
             else
             {
                 rel_move(right, spd * 2);
+                extrusion(1);
                 schwartz(mashtab, j, true, spd);
+                extrusion(-1);
             }
         }
 
-        for (int j = a-1; j > 0; j--)
+        for (int j = a - 1; j > 0; j--)
         {
             if (j % 2 == 0)
-            {
-                rel_move(down, spd * 2);
+            {   
+                rel_move(up, spd * 2);
+                extrusion(1);
                 schwartz(mashtab, j, true, spd);
+                extrusion(-1);
             }
             else
             {
                 rel_move(right, spd * 2);
+                extrusion(1);
                 schwartz(mashtab, j, false, spd);
+                extrusion(-1);
             }
         }
+        rel_move(up);
     }
 }
 
