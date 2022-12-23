@@ -9,6 +9,7 @@ enum extruders
 
 int main()
 {
+    // start
     gcode demo("demo1");
     demo.set_extruder(left);
     demo.set_bed_temperature(40, wait);
@@ -22,20 +23,32 @@ int main()
     demo.set_temperature(215, left);
     demo.abs_move(60, 120, 0.3);
     demo.extrusion(1);
+    // start
 
-    demo.square(85, 1, 2500);
-    demo.next_layer(0.2);
+    // schwartz
 
-    demo.extrusion(-0.5);
-    demo.rel_move(3, -2);
+    int periods = 2;
+    double a = 30;
+    double height = 60;
+    double layer_hght = 0.2;
     Vector2D start = demo.position();
+
+    demo.square(a + 2, 1, 2500);
+    demo.extrusion(-0.5);
+    demo.next_layer(layer_hght);
+    demo.abs_move(start);
+    demo.rel_move(1, 1);
+    demo.rel_move(0, a);
+
+    double mashtab = (a / periods) / Pi;
+    std::cout << mashtab;
+    int steps = height / layer_hght - 1;
+
+    start = demo.position();
     demo.extrusion(0.5);
 
-    for (int i = 0; i < 55.5*2; i++)
+    for (int i = 0; i < steps; i++)
     {
-      //  demo.abs_move(100, 100);
-      //  demo.schwartz(3,1,false);
-      //  demo.abs_move(start);
         if (i == 0)
         {
             demo.fan(255);
@@ -43,11 +56,11 @@ int main()
         }
 
         if (i < 3)
-            demo.schwartz_cube(7, 3.6, 900);
+            demo.schwartz_cube(periods, mashtab, 900);
         else
-            demo.schwartz_cube(7, 3.6, 1800);
+            demo.schwartz_cube(periods, mashtab, 1800);
 
-        demo.next_layer(0.2);
+        demo.next_layer(layer_hght);
         demo.abs_move(start);
     }
 

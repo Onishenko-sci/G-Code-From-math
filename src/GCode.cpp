@@ -177,16 +177,23 @@ void gcode::square(double a, bool fill, int spd)
     line(0, -a, spd);
     if (fill)
     {
-        int steps = a / (2 * line_wdh);
+        int steps = a / line_wdh;
         extrusion(-0.5);
         rel_move(line_wdh, line_wdh);
         extrusion(0.5);
         for (int i = 0; i < steps - 1; i++)
         {
-            line(a - 2 * line_wdh, 0, spd);
-            line(0, line_wdh);
-            line(-(a - 2 * line_wdh), 0);
-            line(0, line_wdh);
+            if (i % 2 == 0)
+            {
+                if (i != 0)
+                    line(0, line_wdh);
+                line(a - 2 * line_wdh, 0, spd);
+            }
+            else
+            {
+                line(0, line_wdh);
+                line(-(a - 2 * line_wdh), 0);
+            }
         }
     }
 }
@@ -224,7 +231,6 @@ void gcode::schwartz(double mashtab, int repeat, bool backwarnds, int spd)
         else
             prev_y = 0;
 
-        out << "; " << prev_y << endl;
         for (int i = 1; i <= steps; i++)
         {
             double y = (atan(ctz / tan(i * dx / mashtab)) + Pi / 2);
@@ -239,13 +245,81 @@ void gcode::schwartz(double mashtab, int repeat, bool backwarnds, int spd)
 
 void gcode::schwartz_cube(int a, double mashtab, int spd)
 {
+    out << ";Schwards cube " << layer << endl;
+    out << "; z = " << z << endl;
     double ctz = -1 / tan(z / mashtab);
+
+    out << "; ctz = " << z / mashtab << endl;
+
+    out << "; ctz = " << std::setprecision(15) << ctz << endl;
+
     Vector2D start = pos;
     Vector2D down(0, -Pi * mashtab);
     Vector2D up(0, Pi * mashtab);
     Vector2D right(Pi * mashtab, 0);
 
-    if (ctz <= 0)
+    if (ctz > -0.0001 && ctz < 0.0001)
+    {
+        for (int j = 1; j <= a; j++)
+        {
+            if (j % 2 == 1)
+            {
+                rel_move(down, spd * 2);
+                extrusion(1);
+                for (int i = 0; i < j; i++)
+                {
+                    line(0, Pi * mashtab / 2, spd);
+                    line(Pi * mashtab, 0, spd);
+                    line(0, Pi * mashtab / 2, spd);
+                }
+                extrusion(-1);
+            }
+            else
+            {
+                rel_move(right, spd * 2);
+                extrusion(1);
+                for (int i = 0; i < j; i++)
+                {
+                    line(0, -Pi * mashtab / 2, spd);
+                    line(-Pi * mashtab, 0, spd);
+                    line(0, -Pi * mashtab / 2, spd);
+                }
+                extrusion(-1);
+            }
+        }
+
+        for (int j = a - 1; j > 0; j--)
+        {
+            if (j % 2 == 0)
+            {
+                rel_move(down, spd * 2);
+                extrusion(1);
+                for (int i = 0; i < j; i++)
+                {
+                    line(0, -Pi * mashtab / 2, spd);
+                    line(-Pi * mashtab, 0, spd);
+                    line(0, -Pi * mashtab / 2, spd);
+                }
+                extrusion(-1);
+            }
+            else
+            {
+                rel_move(right, spd * 2);
+                extrusion(1);
+                for (int i = 0; i < j; i++)
+                {
+                    line(0, Pi * mashtab / 2, spd);
+                    line(Pi * mashtab, 0, spd);
+                    line(0, Pi * mashtab / 2, spd);
+                }
+                extrusion(-1);
+            }
+        }
+        rel_move((a - 1) * up);
+        return;
+    }
+
+    if (ctz < 0)
     {
 
         for (int j = 1; j <= a; j++)
@@ -285,7 +359,7 @@ void gcode::schwartz_cube(int a, double mashtab, int spd)
         }
         rel_move((a - 1) * up);
     }
-    else
+    else if (ctz > 0)
     {
         rel_move((a - 1) * down);
         for (int j = 1; j <= a; j++)
@@ -311,7 +385,7 @@ void gcode::schwartz_cube(int a, double mashtab, int spd)
         for (int j = a - 1; j > 0; j--)
         {
             if (j % 2 == 0)
-            {   
+            {
                 rel_move(up, spd * 2);
                 extrusion(1);
                 schwartz(mashtab, j, true, spd);
