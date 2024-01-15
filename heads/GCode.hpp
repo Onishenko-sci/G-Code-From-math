@@ -37,16 +37,17 @@ public:
     gcode(std::string file_name);
     Vector2D position() { return pos; };
 
+    // Extruder functions
     void set_extruder(unsigned int extr_number);
     void set_temperature(unsigned int temperature, unsigned int extr, bool and_wait = false);
     void set_bed_temperature(unsigned int temperature, bool and_wait = false);
     void clean_extruder(unsigned int extr_number);
     void extrusion(double how_much);
-    //    void change_extruder();
     void move_to_origin();
     void fan(int fan_speed); // 0..255
     void comment(std::string comentar);
-
+    //    void change_extruder();
+    // Moving (without printing) functions
     void abs_move(Vector2D where, int spd = 3600);
     void abs_move(double x, double y, int spd = 3600);
     void abs_move(double x, double y, double z, int spd = 3600);
@@ -55,9 +56,10 @@ public:
     void rel_move(double x, double y, int spd = 3600);
 
     void next_layer(double next_layer_hight);
-    //    void print_3d(double x,double y,double z);
-    //    void print_bringe(Vector2D where);
 
+    // Printing functions
+    //    void print_bringe(Vector2D where);
+    //    void print_3d(double x,double y,double z);
     void line(Vector2D where, int spd = 0);
     void line(double x, double y, int spd = 0);
     void abs_line(double x, double y, int spd = 0);

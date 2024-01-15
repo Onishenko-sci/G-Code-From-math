@@ -239,8 +239,6 @@ void gcode::schwartz(double mashtab, int repeat, bool backwarnds, int spd)
             line(b * dx, b * dy, spd);
         }
     }
-    //    if (ctz > 0)
-    //        rel_move(0, Pi / (mashtab));
 }
 
 void gcode::schwartz_cube(int a, double mashtab, int spd)
